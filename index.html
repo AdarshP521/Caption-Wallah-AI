@@ -1,114 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Caption Wallah AI</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caption Wallah AI</title>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-    <div class="mainheader">
-        <h1>Caption Wallah AI</h1>
-        <div class="logo">
-            <img src="images/cwai2logo1.jpg" alt="Logo">
-        </div>
+  <div class="mainheader">
+    <h1>Caption Wallah AI</h1>
+    <div class="logo">
+      <img src="images/cwai2logo1.jpg" alt="Logo">
     </div>
+  </div>
 
-    <section>
-  <div class="window">
+  <section>
+    <div class="window">
 
       <div id="promptText" class="mainheading">
-    Upload an image to generate the perfect caption for your next post.
-  </div>
-
-    <div class="container">
-      <div class="folder" id="uploadFolder">
-        <div class="front-side">
-          <div class="tip"></div>
-          <div class="cover"></div>
-        </div>
-        <div class="back-side cover"></div>
+        Upload an image to generate the perfect caption for your next post.
       </div>
 
-      <!-- Preview of the selected image (placed above upload button) -->
-      <img id="previewImage" alt="Selected preview" style="display:none; max-width:100%; max-height:260px; border-radius:10px; margin: 10px 0; object-fit: contain; z-index: 2;" />
-
-      <!-- Upload button (placed down below the image) -->
-      <label class="custom-file-upload">
-        <input id="imageUpload" class="title" type="file" accept="image/*" />
-        <span id="uploadBtnText">Upload a File</span>
-      </label>
-
-      <!-- 1. Liquid Loader for image uploading -->
-      <div class="liquid-loader" id="uploadLoader" style="display: none;">
-        <div class="loading-text">
-          Loading<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+      <div class="container">
+        <div class="folder" id="uploadFolder">
+          <div class="front-side">
+            <div class="tip"></div>
+            <div class="cover"></div>
+          </div>
+          <div class="back-side cover"></div>
         </div>
-        <div class="loader-track">
-          <div class="liquid-fill"></div>
+
+        <!-- Preview of the selected image (placed above upload button) -->
+        <img id="previewImage" alt="Selected preview"
+          style="display:none; max-width:100%; max-height:260px; border-radius:10px; margin: 10px 0; object-fit: contain; z-index: 2;" />
+
+        <!-- Upload button (placed down below the image) -->
+        <label class="custom-file-upload">
+          <input id="imageUpload" class="title" type="file" accept="image/*" />
+          <span id="uploadBtnText">Upload a File</span>
+        </label>
+
+        <!-- 1. Liquid Loader for image uploading -->
+        <div class="liquid-loader" id="uploadLoader" style="display: none;">
+          <div class="loading-text">
+            Loading<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+          </div>
+          <div class="loader-track">
+            <div class="liquid-fill"></div>
+          </div>
+        </div>
+
+        <!-- 2. Generating Loader for caption generation -->
+        <div class="loader-wrapper" id="generatingLoader" style="display: none;">
+          <span class="loader-letter">G</span>
+          <span class="loader-letter">e</span>
+          <span class="loader-letter">n</span>
+          <span class="loader-letter">e</span>
+          <span class="loader-letter">r</span>
+          <span class="loader-letter">a</span>
+          <span class="loader-letter">t</span>
+          <span class="loader-letter">i</span>
+          <span class="loader-letter">n</span>
+          <span class="loader-letter">g</span>
+
+          <div class="loader"></div>
+        </div>
+
+        <div id="uploadSuccessMessage"
+          style="display: none; color: white; font-size: 1.1em; text-align: center; margin-top: 8px;">Your file is
+          uploaded successfully.</div>
+      </div>
+
+      <!-- Select Vibe heading directly above the Vibe selector -->
+      <div class="h2">Select Vibe</div>
+
+      <div class="vive">
+        <div class="glass-radio-group">
+          <input type="radio" name="plan" id="glass-silver" checked="" />
+          <label for="glass-silver">Simple</label>
+
+          <input type="radio" name="plan" id="glass-gold" />
+          <label for="glass-gold">Bold</label>
+
+          <input type="radio" name="plan" id="glass-platinum" />
+          <label for="glass-platinum">Professional</label>
+
+          <div class="glass-glider"></div>
         </div>
       </div>
 
-      <!-- 2. Generating Loader for caption generation -->
-      <div class="loader-wrapper" id="generatingLoader" style="display: none;">
-        <span class="loader-letter">G</span>
-        <span class="loader-letter">e</span>
-        <span class="loader-letter">n</span>
-        <span class="loader-letter">e</span>
-        <span class="loader-letter">r</span>
-        <span class="loader-letter">a</span>
-        <span class="loader-letter">t</span>
-        <span class="loader-letter">i</span>
-        <span class="loader-letter">n</span>
-        <span class="loader-letter">g</span>
+      <button id="generateBtn" class="generate-btn" type="button">Generate Captions</button>
 
-        <div class="loader"></div>
+      <div id="captionGrid" class="caption-grid" aria-live="polite"></div>
+
+
+      <div class="func">
+        <div class="action-row">
+          <button class="action-btn share" type="button">
+            <span class="icon">➤</span>
+            <span>Share</span>
+          </button>
+
+          <button class="action-btn copy" type="button">
+            <span class="icon">🗐</span>
+            <span>Copy</span>
+          </button>
+        </div>
       </div>
 
-      <div id="uploadSuccessMessage" style="display: none; color: white; font-size: 1.1em; text-align: center; margin-top: 8px;">Your file is uploaded successfully.</div>
     </div>
 
-    <!-- Select Vibe heading directly above the Vibe selector -->
-    <div class="h2">Select Vibe</div>
-
-    <div class="vive">
-      <div class="glass-radio-group">
-        <input type="radio" name="plan" id="glass-silver" checked="" />
-        <label for="glass-silver">Simple</label>
-
-        <input type="radio" name="plan" id="glass-gold" />
-        <label for="glass-gold">Bold</label>
-
-        <input type="radio" name="plan" id="glass-platinum" />
-        <label for="glass-platinum">Professional</label>
-
-        <div class="glass-glider"></div>
-      </div>
-    </div>
-
-    <button id="generateBtn" class="generate-btn" type="button">Generate Captions</button>
-
-    <div id="captionGrid" class="caption-grid" aria-live="polite"></div>
-
-   
-<div class="func">
-    <div class="action-row">
-      <button class="action-btn share" type="button">
-        <span class="icon">➤</span>
-        <span>Share</span>
-      </button>
-
-      <button class="action-btn copy" type="button">
-        <span class="icon">🗐</span>
-        <span>Copy</span>
-      </button>
-    </div>
-</div>
-
-  </div>
-</section>
-
-    <script src="script.js"></script>
+  </section>
+  <footer class="footer">
+    <p>© 2026 Caption Wallah AI. Made with ❤️ by Pandey Adarsh.</p>
+  </footer>
+  <script src="script.js"></script>
 </body>
+
 </html>

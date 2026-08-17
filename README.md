@@ -103,4 +103,9 @@ The Vibe Selector (`Simple`, `Bold`, `Professional`) uses pure CSS radio hacks a
 
 1. **`readFileAsDataUrl(file)`**: Wraps HTML5 `FileReader` in a Promise to safely convert raw browser File blobs to Base64 strings.
 2. **`parseJsonCaptions(rawText)`**: Robust multi‑tier parser that strips Markdown codeblocks (```json```), attempts strict JSON parsing, and falls back to line‑by‑line regex parsing if the AI output contains surrounding text.
-3. **`copyCaption()` & `shareCaption()`**: Implements modern Web APIs (`navigator.clipboard` & `navigator.share`) with automatic fallback fall‑throughs for unsupported devices.
+3. **`copyCaption()` & `shareCaption()`**: Implements modern Web APIs (`navigator.clipboard` & `navigator.share`) with automatic fallback fall‑throughs for unsupported devices.
+
+
+
+
+[![Netlify Status](https://api.netlify.com/api/v1/badges/41d2a324-e51f-472e-9203-b2624dbb25f5/deploy-status)](https://app.netlify.com/projects/captionwallahai/deploys)
