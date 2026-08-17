@@ -1,16 +1,18 @@
+// Paste your OpenRouter API Key below if you want to hardcode it for your site
+const OPENROUTER_API_KEY = "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";
+
 const vibeLabels = {
   'glass-silver': 'Simple',
   'glass-gold': 'Bold',
   'glass-platinum': 'Professional'
 };
 
-const AI_KEYS = {}; // Frontend no longer holds API keys. Backend handles OpenRouter/OpenAI keys.
+const AI_KEYS = {};
 
 const state = {
   file: null,
   captions: [],
   activeIndex: 0,
-  provider: 'gemini',
   isGenerating: false
 };
 
@@ -21,10 +23,37 @@ const captionGrid = document.getElementById('captionGrid');
 const generateBtn = document.getElementById('generateBtn');
 const shareBtn = document.querySelector('.share');
 const copyBtn = document.querySelector('.copy');
-const regenBtn = document.querySelector('.regen');
 const liquidLoader = document.getElementById('liquidLoader');
 const fileUploadLabel = document.querySelector('.custom-file-upload');
 const uploadSuccessMessage = document.getElementById('uploadSuccessMessage');
+const apiKeyBtn = document.getElementById('apiKeyBtn');
+
+function getOpenRouterKey() {
+  return OPENROUTER_API_KEY || localStorage.getItem('OPENROUTER_API_KEY') || AI_KEYS.openrouter || null;
+}
+
+function promptOpenRouterKey(forcePrompt = false) {
+  let key = getOpenRouterKey();
+  if (forcePrompt || !key) {
+    key = prompt('Please enter your OpenRouter API Key:\n(Get your key at openrouter.ai/keys)', key || '');
+    if (key && key.trim()) {
+      localStorage.setItem('OPENROUTER_API_KEY', key.trim());
+      return key.trim();
+    }
+  }
+  return key;
+}
+
+if (apiKeyBtn) {
+  apiKeyBtn.addEventListener('click', () => {
+    const key = promptOpenRouterKey(true);
+    if (key) {
+      setPrompt('OpenRouter API Key saved successfully!');
+    } else {
+      setPrompt('OpenRouter API Key was not updated.');
+    }
+  });
+}
 
 function escapeHtml(value) {
   return String(value)
@@ -47,10 +76,6 @@ function getSelectedCaption() {
 function setPrompt(message) {
   if (!promptText) return;
   promptText.textContent = message;
-}
-
-function getApiKey(provider) {
-  return null; // Backend is responsible for API keys; frontend does not use them.
 }
 
 function renderCaptions() {
@@ -113,7 +138,7 @@ function parseJsonCaptions(rawText) {
         .slice(0, 3);
     }
   } catch (error) {
-    console.warn('JSON parse failed, trying to recover from text result.', error);
+    console.warn('JSON parse failed, trying line-based fallback.', error);
   }
 
   const lines = cleaned
@@ -129,97 +154,101 @@ function parseJsonCaptions(rawText) {
   return [];
 }
 
-async function callGemini(file, vibe) {
-  const apiKey = getApiKey('gemini');
+async function callOpenRouter(file, vibe) {
+  let apiKey = getOpenRouterKey();
   if (!apiKey) {
-    return [];
-  }
-
-  const imageData = await readFileAsDataUrl(file);
-  const base64 = imageData.split(',')[1];
-
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            {
-              text: `Generate exactly 3 unique social media captions for this image. Vibe: ${vibe}. Make them natural, engaging, and highly relevant to the image. Return valid JSON in this format: {"captions":["caption 1","caption 2","caption 3"]}. Keep each caption short, polished, and distinct.`
-            },
-            {
-              inline_data: {
-                mime_type: file.type || 'image/jpeg',
-                data: base64
-              }
-            }
-          ]
-        }
-      ]
-    })
-  });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(errText || 'Gemini request failed.');
-  }
-
-  const result = await response.json();
-  const text = result.candidates?.[0]?.content?.parts
-    ?.map((part) => part.text)
-    .join('') || '';
-
-  return parseJsonCaptions(text);
-}
-
-async function callOpenAI(file, vibe) {
-  const apiKey = getApiKey('openai');
-  if (!apiKey) {
-    return [];
+    apiKey = promptOpenRouterKey(true);
+    if (!apiKey) {
+      throw new Error('OpenRouter API key is required. Paste your key in script.js (OPENROUTER_API_KEY) or click "🔑 API Key" in the header.');
+    }
   }
 
   const imageData = await readFileAsDataUrl(file);
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      response_format: { type: 'json_object' },
-      messages: [
-        {
-          role: 'user',
-          content: [
+  const modelsToTry = [
+    'nvidia/nemotron-3-ultra-550b-a55b:free',
+    'google/gemini-2.0-flash-001',
+    'openai/gpt-4o-mini',
+    'meta-llama/llama-3.2-11b-vision-instruct:free'
+  ];
+
+  let lastError = null;
+
+  for (const model of modelsToTry) {
+    try {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'HTTP-Referer': window.location.href,
+          'X-Title': 'Caption Wallah AI',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: model,
+          extra_body: { reasoning: { enabled: true } },
+          messages: [
             {
-              type: 'text',
-              text: `Generate exactly 3 unique social media captions for this image. Vibe: ${vibe}. Make them short, engaging, and distinct. Return valid JSON in this format: {"captions":["caption 1","caption 2","caption 3"]}.`
-            },
-            {
-              type: 'image_url',
-              image_url: {
-                url: imageData
-              }
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: `Generate exactly 3 unique social media captions for this image. Vibe: ${vibe}. Make them natural, engaging, and highly relevant to the image. Return valid JSON in this format: {"captions":["caption 1","caption 2","caption 3"]}. Keep each caption short, polished, and distinct.`
+                },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: imageData
+                  }
+                }
+              ]
             }
           ]
-        }
-      ]
-    })
-  });
+        })
+      });
 
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(errText || 'OpenAI request failed.');
+      if (!response.ok) {
+        const errText = await response.text();
+        console.warn(`OpenRouter model ${model} response:`, response.status, errText);
+        let errMsg = 'OpenRouter request failed.';
+        try {
+          const parsedErr = JSON.parse(errText);
+          errMsg = parsedErr.error?.message || parsedErr.message || errText;
+        } catch (e) {
+          errMsg = errText;
+        }
+
+        if (response.status === 401) {
+          localStorage.removeItem('OPENROUTER_API_KEY');
+          throw new Error('Invalid OpenRouter API Key. Please update OPENROUTER_API_KEY in script.js or click 🔑 API Key.');
+        }
+
+        lastError = new Error(`[${response.status}] ${errMsg}`);
+        continue;
+      }
+
+      const result = await response.json();
+      const content = result.choices?.[0]?.message?.content || '';
+      const captions = parseJsonCaptions(content);
+      if (captions && captions.length) {
+        return captions;
+      }
+    } catch (err) {
+      if (err.message.includes('Invalid OpenRouter API Key')) {
+        throw err;
+      }
+      lastError = err;
+    }
   }
 
-  const result = await response.json();
-  const content = result.choices?.[0]?.message?.content || '';
-  return parseJsonCaptions(content);
+  if (lastError) {
+    throw lastError;
+  }
+  return [];
 }
+
+const uploadLoader = document.getElementById('uploadLoader');
+const generatingLoader = document.getElementById('generatingLoader');
 
 async function generateCaptions() {
   if (state.isGenerating) {
@@ -237,38 +266,37 @@ async function generateCaptions() {
 
   setPrompt(`Generating three ${vibe.toLowerCase()} captions...`);
 
+  const previewImage = document.getElementById('previewImage');
+  const customFileUpload = document.querySelector('.custom-file-upload');
+
+  if (previewImage && state.file) {
+    previewImage.style.display = 'block';
+    previewImage.classList.add('generating-blur');
+  }
+  if (customFileUpload) customFileUpload.style.display = 'inline-block';
+
+  if (generatingLoader) {
+    generatingLoader.style.display = 'flex';
+  }
+
   try {
-    const form = new FormData();
-    form.append('image', state.file);
-    form.append('vibe', vibe);
+    const captions = await callOpenRouter(state.file, vibe);
 
-    // Use absolute backend URL so the static frontend can be served separately.
-    const backendUrl = 'http://127.0.0.1:5000/generate';
-
-    const resp = await fetch(backendUrl, {
-      method: 'POST',
-      body: form
-    });
-
-    if (!resp.ok) {
-      const text = await resp.text();
-      throw new Error(`Server responded ${resp.status}: ${text}`);
-    }
-
-    const json = await resp.json();
-    const captions = Array.isArray(json.captions) ? json.captions.slice(0, 3) : [];
-
-    if (!captions.length) {
+    if (!captions || !captions.length) {
       state.captions = [];
       state.activeIndex = 0;
       renderCaptions();
-      setPrompt('No captions returned from server. Check server logs or API key.');
+      setPrompt('No captions returned from OpenRouter. Please check your API key or model availability.');
       return;
     }
 
     state.captions = captions;
     state.activeIndex = 0;
     renderCaptions();
+
+    if (generateBtn) {
+      generateBtn.textContent = 'Regenerate Captions';
+    }
 
     const selected = getSelectedCaption();
     setPrompt(`Showing 3 ${vibe.toLowerCase()} captions for your image. Current pick: "${selected}"`);
@@ -277,9 +305,17 @@ async function generateCaptions() {
     state.captions = [];
     state.activeIndex = 0;
     renderCaptions();
-    setPrompt('Failed to generate captions. Ensure the backend is running at http://127.0.0.1:5000 and OPENROUTER_API_KEY is set. See console for details.');
+    setPrompt(error.message || 'Failed to generate captions. Check console for details.');
   } finally {
     state.isGenerating = false;
+    if (generatingLoader) {
+      generatingLoader.style.display = 'none';
+    }
+    if (previewImage) {
+      previewImage.classList.remove('generating-blur');
+      if (state.file) previewImage.style.display = 'block';
+    }
+    if (customFileUpload) customFileUpload.style.display = 'inline-block';
   }
 }
 
@@ -339,115 +375,79 @@ async function shareCaption() {
 }
 
 fileInput.addEventListener('change', async (event) => {
-  state.file = event.target.files[0];
-  if (!state.file) {
-    setPrompt('Upload an image to generate the perfect caption for your next post.');
-    return;
-  }
+  const selectedFile = event.target.files && event.target.files[0];
+  if (!selectedFile) return;
 
+  state.file = selectedFile;
   const vibe = getSelectedVibe();
-  setPrompt(`Image selected: ${state.file.name}. Vibe: ${vibe}.`);
+  setPrompt(`Uploading image: ${state.file.name}...`);
 
-  // Hide the upload label now that a file was chosen
-  if (fileUploadLabel) {
-    fileUploadLabel.style.display = 'none';
+  const previewImage = document.getElementById('previewImage');
+  const uploadBtnSpan = document.getElementById('uploadBtnText');
+  const folderElem = document.getElementById('uploadFolder');
+  const customFileUpload = document.querySelector('.custom-file-upload');
+
+  // Hide container elements and show uploadLoader inside container during image upload
+  if (previewImage) previewImage.style.display = 'none';
+  if (folderElem) folderElem.style.display = 'none';
+  if (customFileUpload) customFileUpload.style.display = 'none';
+
+  if (uploadLoader) {
+    uploadLoader.style.display = 'flex';
   }
 
-  // Show preview of selected image (frontend-only)
-  const previewImage = document.getElementById('previewImage');
   try {
     const dataUrl = await readFileAsDataUrl(state.file);
+
+    // Smooth upload animation delay
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+
     if (previewImage) {
       previewImage.src = dataUrl;
-      previewImage.style.display = 'block';
     }
+
+    if (uploadBtnSpan) {
+      uploadBtnSpan.textContent = 'Upload a New File';
+    }
+    if (generateBtn) {
+      generateBtn.textContent = 'Generate Captions';
+    }
+    setPrompt(`Image selected: ${state.file.name}. Vibe: ${vibe}. Click "Generate Captions" to continue.`);
   } catch (err) {
-    console.error('Preview error:', err);
-  }
+    console.error('Upload error:', err);
+    setPrompt('Could not read image file. Please try again.');
+  } finally {
+    if (uploadLoader) {
+      uploadLoader.style.display = 'none';
+    }
+    if (previewImage && state.file) previewImage.style.display = 'block';
+    if (customFileUpload) customFileUpload.style.display = 'inline-block';
 
-  // Show a brief upload success hint but do NOT auto-generate captions.
-  // Let the user click the "Generate Captions" button when ready.
-  if (uploadSuccessMessage) {
-    uploadSuccessMessage.style.display = 'block';
-    setTimeout(() => {
-      if (uploadSuccessMessage) {
-        uploadSuccessMessage.style.display = 'none';
-      }
-      if (fileUploadLabel) {
-        fileUploadLabel.style.display = 'inline-block';
-      }
-    }, 1500);
+    if (uploadSuccessMessage) {
+      uploadSuccessMessage.style.display = 'block';
+      setTimeout(() => {
+        if (uploadSuccessMessage) {
+          uploadSuccessMessage.style.display = 'none';
+        }
+      }, 2000);
+    }
   }
-
-  // Reset file input value so the same file can be reselected later if needed
-  fileInput.value = null;
 });
 
-// When the upload label is clicked and a file is already selected, treat the click
-// as an explicit "upload / regenerate" action: hide the upload button, show
-// the loader, run caption generation, and then restore UI. If no file is
-// selected, allow the default behavior (open file picker).
-if (fileUploadLabel) {
-  fileUploadLabel.addEventListener('click', async (e) => {
-    if (!state.file) {
-      // Let the file picker open for new selection
-      return;
-    }
-
-    // Prevent the file dialog from opening since a file is already chosen
-    e.preventDefault();
-
-    // Hide the upload label and show loader
-    fileUploadLabel.style.display = 'none';
-    if (liquidLoader) {
-      liquidLoader.style.display = 'flex';
-    }
-
-    try {
-      await generateCaptions();
-    } finally {
-      if (liquidLoader) {
-        liquidLoader.style.display = 'none';
-      }
-
-      // Show brief success message if available and restore upload label
-      if (uploadSuccessMessage) {
-        uploadSuccessMessage.style.display = 'block';
-        setTimeout(() => {
-          uploadSuccessMessage.style.display = 'none';
-          fileUploadLabel.style.display = 'inline-block';
-        }, 3000);
-      } else {
-        fileUploadLabel.style.display = 'inline-block';
-      }
-    }
-  });
-}
-
 vibeInputs.forEach((input) => {
-  input.addEventListener('change', async () => {
+  input.addEventListener('change', () => {
+    const vibe = getSelectedVibe();
     if (!state.file) {
-      setPrompt('Choose a vibe and upload an image to continue.');
+      setPrompt(`Vibe selected: ${vibe}. Upload an image to continue.`);
       return;
     }
-
-    if (liquidLoader) {
-      liquidLoader.style.display = 'flex';
-    }
-
-    try {
-      await generateCaptions();
-    } finally {
-      if (liquidLoader) {
-        liquidLoader.style.display = 'none';
-      }
-    }
+    setPrompt(`Vibe changed to ${vibe}. Click "Generate Captions" to update.`);
   });
 });
 
 generateBtn.addEventListener('click', generateCaptions);
 shareBtn.addEventListener('click', shareCaption);
 copyBtn.addEventListener('click', copyCaption);
-regenBtn.addEventListener('click', generateCaptions);
 
 renderCaptions();
+
