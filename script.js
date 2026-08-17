@@ -9,6 +9,7 @@ const AI_KEYS = {
   openai: ''
 };
 
+
 const state = {
   file: null,
   captions: [],
