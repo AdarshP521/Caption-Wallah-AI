@@ -4,11 +4,7 @@ const vibeLabels = {
   'glass-platinum': 'Professional'
 };
 
-const AI_KEYS = {
-  gemini: 'AQ.Ab8RN6Lhwkf3PaqvN1SOKKlCh7BkC6p3GkGIdtSiyuSbIK8y9Q',
-  openai: ''
-};
-
+const AI_KEYS = {}; // Frontend no longer holds API keys. Backend handles OpenRouter/OpenAI keys.
 
 const state = {
   file: null,
@@ -54,7 +50,7 @@ function setPrompt(message) {
 }
 
 function getApiKey(provider) {
-  return AI_KEYS[provider] || AI_KEYS.gemini;
+  return null; // Backend is responsible for API keys; frontend does not use them.
 }
 
 function renderCaptions() {
@@ -238,46 +234,50 @@ async function generateCaptions() {
 
   state.isGenerating = true;
   const vibe = getSelectedVibe();
-  const apiKey = getApiKey(state.provider);
-
-  if (!apiKey) {
-    state.captions = [];
-    state.activeIndex = 0;
-    renderCaptions();
-    setPrompt('Add the real API key in the code to generate AI captions.');
-    state.isGenerating = false;
-    return;
-  }
 
   setPrompt(`Generating three ${vibe.toLowerCase()} captions...`);
 
   try {
-    const provider = state.provider;
-    let captions = [];
+    const form = new FormData();
+    form.append('image', state.file);
+    form.append('vibe', vibe);
 
-    if (provider === 'openai') {
-      captions = await callOpenAI(state.file, vibe);
-    } else {
-      captions = await callGemini(state.file, vibe);
+    // Use absolute backend URL so the static frontend can be served separately.
+    const backendUrl = 'http://127.0.0.1:5000/generate';
+
+    const resp = await fetch(backendUrl, {
+      method: 'POST',
+      body: form
+    });
+
+    if (!resp.ok) {
+      const text = await resp.text();
+      throw new Error(`Server responded ${resp.status}: ${text}`);
     }
 
-    state.captions = captions.slice(0, 3);
-    state.activeIndex = 0;
-    renderCaptions();
+    const json = await resp.json();
+    const captions = Array.isArray(json.captions) ? json.captions.slice(0, 3) : [];
 
-    if (!state.captions.length) {
-      setPrompt('No captions returned. Please check the API key and try again.');
+    if (!captions.length) {
+      state.captions = [];
+      state.activeIndex = 0;
+      renderCaptions();
+      setPrompt('No captions returned from server. Check server logs or API key.');
       return;
     }
 
+    state.captions = captions;
+    state.activeIndex = 0;
+    renderCaptions();
+
     const selected = getSelectedCaption();
-    setPrompt(`Showing 3 ${vibe.toLowerCase()} captions for your image. Current pick: “${selected}”`);
+    setPrompt(`Showing 3 ${vibe.toLowerCase()} captions for your image. Current pick: "${selected}"`);
   } catch (error) {
-    console.error(error);
+    console.error('generateCaptions error:', error);
     state.captions = [];
     state.activeIndex = 0;
     renderCaptions();
-    setPrompt('The API request failed. Add a valid key and try again.');
+    setPrompt('Failed to generate captions. Ensure the backend is running at http://127.0.0.1:5000 and OPENROUTER_API_KEY is set. See console for details.');
   } finally {
     state.isGenerating = false;
   }
@@ -348,26 +348,27 @@ fileInput.addEventListener('change', async (event) => {
   const vibe = getSelectedVibe();
   setPrompt(`Image selected: ${state.file.name}. Vibe: ${vibe}.`);
 
+  // Hide the upload label now that a file was chosen
   if (fileUploadLabel) {
     fileUploadLabel.style.display = 'none';
   }
-  if (liquidLoader) {
-    liquidLoader.style.display = 'flex';
+
+  // Show preview of selected image (frontend-only)
+  const previewImage = document.getElementById('previewImage');
+  try {
+    const dataUrl = await readFileAsDataUrl(state.file);
+    if (previewImage) {
+      previewImage.src = dataUrl;
+      previewImage.style.display = 'block';
+    }
+  } catch (err) {
+    console.error('Preview error:', err);
   }
 
-  try {
-    await generateCaptions();
-  } finally {
-    if (liquidLoader) {
-      liquidLoader.style.display = 'none';
-    }
-    if (uploadSuccessMessage) {
-      uploadSuccessMessage.style.display = 'block';
-    }
-
-    // Reset file input to allow re-uploading the same file
-    fileInput.value = null;
-
+  // Show a brief upload success hint but do NOT auto-generate captions.
+  // Let the user click the "Generate Captions" button when ready.
+  if (uploadSuccessMessage) {
+    uploadSuccessMessage.style.display = 'block';
     setTimeout(() => {
       if (uploadSuccessMessage) {
         uploadSuccessMessage.style.display = 'none';
@@ -375,8 +376,11 @@ fileInput.addEventListener('change', async (event) => {
       if (fileUploadLabel) {
         fileUploadLabel.style.display = 'inline-block';
       }
-    }, 3000); // Show success message for 3 seconds
+    }, 1500);
   }
+
+  // Reset file input value so the same file can be reselected later if needed
+  fileInput.value = null;
 });
 
 // When the upload label is clicked and a file is already selected, treat the click
