@@ -5,7 +5,7 @@ const vibeLabels = {
 };
 
 const AI_KEYS = {
-  gemini: '',
+  gemini: 'AQ.Ab8RN6Lhwkf3PaqvN1SOKKlCh7BkC6p3GkGIdtSiyuSbIK8y9Q',
   openai: ''
 };
 
@@ -14,7 +14,8 @@ const state = {
   file: null,
   captions: [],
   activeIndex: 0,
-  provider: 'gemini'
+  provider: 'gemini',
+  isGenerating: false
 };
 
 const fileInput = document.getElementById('imageUpload');
@@ -25,6 +26,9 @@ const generateBtn = document.getElementById('generateBtn');
 const shareBtn = document.querySelector('.share');
 const copyBtn = document.querySelector('.copy');
 const regenBtn = document.querySelector('.regen');
+const liquidLoader = document.getElementById('liquidLoader');
+const fileUploadLabel = document.querySelector('.custom-file-upload');
+const uploadSuccessMessage = document.getElementById('uploadSuccessMessage');
 
 function escapeHtml(value) {
   return String(value)
@@ -45,7 +49,8 @@ function getSelectedCaption() {
 }
 
 function setPrompt(message) {
-  promptText.innerHTML = message;
+  if (!promptText) return;
+  promptText.textContent = message;
 }
 
 function getApiKey(provider) {
@@ -53,6 +58,8 @@ function getApiKey(provider) {
 }
 
 function renderCaptions() {
+  if (!captionGrid) return;
+
   if (!state.captions.length) {
     captionGrid.innerHTML = '';
     return;
@@ -219,11 +226,17 @@ async function callOpenAI(file, vibe) {
 }
 
 async function generateCaptions() {
+  if (state.isGenerating) {
+    setPrompt('Still generating captions — please wait.');
+    return;
+  }
+
   if (!state.file) {
     setPrompt('Please upload an image first.');
     return;
   }
 
+  state.isGenerating = true;
   const vibe = getSelectedVibe();
   const apiKey = getApiKey(state.provider);
 
@@ -232,6 +245,7 @@ async function generateCaptions() {
     state.activeIndex = 0;
     renderCaptions();
     setPrompt('Add the real API key in the code to generate AI captions.');
+    state.isGenerating = false;
     return;
   }
 
@@ -264,6 +278,8 @@ async function generateCaptions() {
     state.activeIndex = 0;
     renderCaptions();
     setPrompt('The API request failed. Add a valid key and try again.');
+  } finally {
+    state.isGenerating = false;
   }
 }
 
@@ -322,9 +338,8 @@ async function shareCaption() {
   }
 }
 
-fileInput.addEventListener('change', (event) => {
+fileInput.addEventListener('change', async (event) => {
   state.file = event.target.files[0];
-
   if (!state.file) {
     setPrompt('Upload an image to generate the perfect caption for your next post.');
     return;
@@ -332,17 +347,97 @@ fileInput.addEventListener('change', (event) => {
 
   const vibe = getSelectedVibe();
   setPrompt(`Image selected: ${state.file.name}. Vibe: ${vibe}.`);
-  generateCaptions();
+
+  if (fileUploadLabel) {
+    fileUploadLabel.style.display = 'none';
+  }
+  if (liquidLoader) {
+    liquidLoader.style.display = 'flex';
+  }
+
+  try {
+    await generateCaptions();
+  } finally {
+    if (liquidLoader) {
+      liquidLoader.style.display = 'none';
+    }
+    if (uploadSuccessMessage) {
+      uploadSuccessMessage.style.display = 'block';
+    }
+
+    // Reset file input to allow re-uploading the same file
+    fileInput.value = null;
+
+    setTimeout(() => {
+      if (uploadSuccessMessage) {
+        uploadSuccessMessage.style.display = 'none';
+      }
+      if (fileUploadLabel) {
+        fileUploadLabel.style.display = 'inline-block';
+      }
+    }, 3000); // Show success message for 3 seconds
+  }
 });
 
+// When the upload label is clicked and a file is already selected, treat the click
+// as an explicit "upload / regenerate" action: hide the upload button, show
+// the loader, run caption generation, and then restore UI. If no file is
+// selected, allow the default behavior (open file picker).
+if (fileUploadLabel) {
+  fileUploadLabel.addEventListener('click', async (e) => {
+    if (!state.file) {
+      // Let the file picker open for new selection
+      return;
+    }
+
+    // Prevent the file dialog from opening since a file is already chosen
+    e.preventDefault();
+
+    // Hide the upload label and show loader
+    fileUploadLabel.style.display = 'none';
+    if (liquidLoader) {
+      liquidLoader.style.display = 'flex';
+    }
+
+    try {
+      await generateCaptions();
+    } finally {
+      if (liquidLoader) {
+        liquidLoader.style.display = 'none';
+      }
+
+      // Show brief success message if available and restore upload label
+      if (uploadSuccessMessage) {
+        uploadSuccessMessage.style.display = 'block';
+        setTimeout(() => {
+          uploadSuccessMessage.style.display = 'none';
+          fileUploadLabel.style.display = 'inline-block';
+        }, 3000);
+      } else {
+        fileUploadLabel.style.display = 'inline-block';
+      }
+    }
+  });
+}
+
 vibeInputs.forEach((input) => {
-  input.addEventListener('change', () => {
+  input.addEventListener('change', async () => {
     if (!state.file) {
       setPrompt('Choose a vibe and upload an image to continue.');
       return;
     }
 
-    generateCaptions();
+    if (liquidLoader) {
+      liquidLoader.style.display = 'flex';
+    }
+
+    try {
+      await generateCaptions();
+    } finally {
+      if (liquidLoader) {
+        liquidLoader.style.display = 'none';
+      }
+    }
   });
 });
 

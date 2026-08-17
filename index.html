@@ -21,10 +21,10 @@
     <section>
   <div class="window">
 
-      <div class="mainheading">
+      <div id="promptText" class="mainheading">
     Upload an image to generate the perfect caption for your next post.
   </div>
-  
+
     <div class="h2">Select Vibe</div>
 
     <div class="container">
@@ -38,8 +38,21 @@
 
       <label class="custom-file-upload">
         <input id="imageUpload" class="title" type="file" accept="image/*" />
-        Upload a File
+        <span>Upload a File</span>
       </label>
+
+      <!-- Preview of the selected image -->
+      <img id="previewImage" alt="Selected preview" style="display:none; max-width:100%; border-radius:8px; margin-top:12px;" />
+
+      <div class="liquid-loader" id="liquidLoader" style="display: none;">
+        <div class="loading-text">
+          Loading<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+        </div>
+        <div class="loader-track">
+          <div class="liquid-fill"></div>
+        </div>
+      </div>
+      <div id="uploadSuccessMessage" style="display: none; color: white; font-size: 1.1em; text-align: center;">Your file is uploaded successfully.</div>
     </div>
 
     <div class="vive">
@@ -59,13 +72,7 @@
 
     <button id="generateBtn" class="generate-btn" type="button">Generate Captions</button>
 
-    <!-- <div class="prompt-box">
-    <div class="text-box">
-      <p id="promptText">Upload an image to generate the perfect caption for your next post.</p>
-    </div>
-    </div>
-
-    <div id="captionGrid" class="caption-grid" aria-live="polite"></div> -->
+    <div id="captionGrid" class="caption-grid" aria-live="polite"></div>
 
    
 <div class="func">
