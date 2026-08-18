@@ -87,6 +87,7 @@ section {
   margin: 1.2rem 0 0.2rem;
   padding: 0;
   font-weight: 600;
+
 }
 
 .func {
@@ -97,6 +98,17 @@ section {
   width: 100%;
   margin-top: 1rem;
 }
+
+
+.footer h3 {
+  font-size: 1rem;
+  margin: 1.2rem 0 0.2rem;
+  padding: 5;
+  border-radius: 5rem;
+  color: linear-gradient(180deg, #ee3098, #e22c3f);
+}
+
+
 
 .container {
   --transition: 350ms;

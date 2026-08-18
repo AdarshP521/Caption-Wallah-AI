@@ -110,7 +110,7 @@ function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error('Could not read the selected image.'));
+    reader.onerror = () => reject(new Error('Could not read the selected image. Re-Upload It or Try With Another Image'));
     reader.readAsDataURL(file);
   });
 }
@@ -122,6 +122,7 @@ function parseJsonCaptions(rawText) {
     .replace(/```json/gi, '')
     .replace(/```/g, '')
     .trim();
+
 
   try {
     const parsed = JSON.parse(cleaned);
@@ -184,6 +185,10 @@ async function callOpenRouter(file, vibe) {
           'X-Title': 'Caption Wallah AI',
           'Content-Type': 'application/json'
         },
+
+
+        // text which is send by develop to the ai model for caption generation
+
         body: JSON.stringify({
           model: model,
           extra_body: { reasoning: { enabled: true } },
@@ -252,7 +257,7 @@ const generatingLoader = document.getElementById('generatingLoader');
 
 async function generateCaptions() {
   if (state.isGenerating) {
-    setPrompt('Still generating captions — please wait.');
+    setPrompt('Still generating captions — Please Wait.');
     return;
   }
 
@@ -286,7 +291,7 @@ async function generateCaptions() {
       state.captions = [];
       state.activeIndex = 0;
       renderCaptions();
-      setPrompt('No captions returned from OpenRouter. Please check your API key or model availability.');
+      setPrompt('No captions returned from Caption Wallah AI. Re-Upload It or Try With Another Image');
       return;
     }
 
@@ -299,13 +304,13 @@ async function generateCaptions() {
     }
 
     const selected = getSelectedCaption();
-    setPrompt(`Showing 3 ${vibe.toLowerCase()} captions for your image. Current pick: "${selected}"`);
+    setPrompt(`Showing 3 ${vibe.toLowerCase()} captions for your image. AI's Current pick: "${selected}"`);
   } catch (error) {
     console.error('generateCaptions error:', error);
     state.captions = [];
     state.activeIndex = 0;
     renderCaptions();
-    setPrompt(error.message || 'Failed to generate captions. Check console for details.');
+    setPrompt(error.message || 'Failed to generate captions. Re-Upload It or Try With Another Image');
   } finally {
     state.isGenerating = false;
     if (generatingLoader) {
@@ -412,7 +417,7 @@ fileInput.addEventListener('change', async (event) => {
     if (generateBtn) {
       generateBtn.textContent = 'Generate Captions';
     }
-    setPrompt(`Image selected: ${state.file.name}. Vibe: ${vibe}. Click "Generate Captions" to continue.`);
+    setPrompt(`Image selected: ${state.file.name}. With Vibe: ${vibe}. Click "Generate Captions" to continue.`);
   } catch (err) {
     console.error('Upload error:', err);
     setPrompt('Could not read image file. Please try again.');
