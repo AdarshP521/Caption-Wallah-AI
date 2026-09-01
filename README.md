@@ -1,10 +1,10 @@
-# Caption-Wallah-AI 🚀
+# Subtitle-Wallah-AI 🚀
 
-Caption-Wallah-AI generates engaging social media captions using OpenRouter AI directly in your browser. No backend server or Python setup required!
+Subtitle-Wallah-AI generates engaging social media captions using OpenRouter AI directly in your browser. No backend server or Python setup required!
 
-# Caption-Wallah-AI: Complete Technical Architecture & Design System
+# Subtitle-Wallah-AI: Complete Technical Architecture & Design System
 
-A deep-dive technical breakdown of how **Caption-Wallah-AI** works under the hood — including tools, technology stack, complete execution workflows, and design system aesthetics.
+A deep-dive technical breakdown of how **Subtitle-Wallah-AI** works under the hood — including tools, technology stack, complete execution workflows, and design system aesthetics.
 
 ---
 
@@ -107,5 +107,4 @@ The Vibe Selector (`Simple`, `Bold`, `Professional`) uses pure CSS radio hacks a
 
 
 
-
-[![Netlify Status](https://api.netlify.com/api/v1/badges/41d2a324-e51f-472e-9203-b2624dbb25f5/deploy-status)](https://app.netlify.com/projects/captionwallahai/deploys)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/41d2a324-e51f-472e-9203-b2624dbb25f5/deploy-status)](https://app.netlify.com/projects/subtitlewallahai/deploys)

@@ -18,8 +18,10 @@ body {
 
 img {
   max-width: 100%;
-  display: block;
+  display:block;
+  z-index: 100;
 }
+
 
 .mainheader {
   max-width: 1400px;
@@ -52,7 +54,7 @@ img {
 .mainheader .logo img {
   width: 52px;
   height: 52px;
-  border-radius: 50%;
+  border-radius:0%;
   object-fit: cover;
 }
 
