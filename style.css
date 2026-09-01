@@ -84,7 +84,7 @@ section {
   font-size: clamp(1rem, 1.4vw, 1.3rem);
   color: #ffffff;
   opacity: 0.95;
-  margin: 1.2rem 0 0.2rem;
+  margin: -1rem 0 0.2rem;
   padding: 0;
   font-weight: 600;
 
@@ -101,13 +101,18 @@ section {
 
 
 .footer h3 {
+  display: flex;
   font-size: 1rem;
   margin: 1.2rem 0 0.2rem;
   padding: 5;
   border-radius: 5rem;
-  color: linear-gradient(180deg, #ee3098, #e22c3f);
+  color: linear-gradient(180deg, #eeeb30, #e22c3f);
 }
 
+.redirect{
+  color: #7c3aed;
+  font-weight: 500;
+}
 
 
 .container {
@@ -121,7 +126,7 @@ section {
   align-items: center;
   justify-content: flex-end;
   padding: 10px;
-  background: linear-gradient(135deg, #f162ba, #ed45ae);
+  background: linear-gradient(135deg, #f6b73c, #ed8d3c);
   border-radius: 15px;
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
   min-height: calc(var(--folder-H) * 1.7);

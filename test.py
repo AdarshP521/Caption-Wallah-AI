@@ -44,7 +44,7 @@ def generate_captions(image_bytes: bytes, vibe: str = 'Simple'):
     data_url = f"data:image/jpeg;base64,{b64}"
 
     prompt = (
-        f"Generate exactly 3 unique social media captions for this image. "
+        f"Generate exactly 3 unique social media captions for this image. Identify the core subject, action, and overall atmosphere of this image. Based on your analysis, provide three different caption styles "
         f"Vibe: {vibe}. Make them natural, engaging, and highly relevant to the image. "
         f"Return valid JSON in this format: {{\"captions\":[\"caption 1\",\"caption 2\",\"caption 3\"]}}."
     )
