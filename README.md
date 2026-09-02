@@ -58,15 +58,15 @@ sequenceDiagram
 
 
 ## 4. Model Used;
-- **Model ID**
-    nvidia/nemotron-3-ultra-550b-a55b:free
-    google/gemma-4-26b-a4b-it:free
-    minimax/minimax-m3:free
-    google/gemini-2.0-flash-001
-    openai/gpt-4o-mini
-    meta-llama/llama-3.2-11b-vision-instruct:free
+- **nvidia/nemotron-3-ultra-550b-a55b**
+- **google/gemma-4-26b-a4b-it:free**
+- **minimax/minimax-m3:free**
+- **google/gemini-2.0-flash-001**
+- **openai/gpt-4o-mini**
+- **meta-llama/llama-3.2-11b-vision-instruct**
+    
 
-    Future models will be added as they become available on OpenRouter.
+Future models will be added as they become available on OpenRouter.
 
 
 ## Thank You for Using Subtitle-Wallah-AI! 🎉
