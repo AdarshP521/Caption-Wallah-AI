@@ -37,11 +37,15 @@ img {
   justify-content: center;
 }
 
+
+
 .mainheader h1 {
   font-size: clamp(1.5rem, 2vw, 2.3rem);
   margin-left: 1rem;
   text-align: center;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-family:sans-serif;
+  font-weight: 400;
+  font-style: normal;
 }
 
 .mainheader .logo {
@@ -88,8 +92,13 @@ section {
   opacity: 0.95;
   margin: -1rem 0 0.2rem;
   padding: 0;
-  font-weight: 600;
+  font-weight: 500;
+  font-family:sans-serif;
+}
 
+.mainheading{
+  font-weight: 100;
+  font-size: 110%;
 }
 
 .func {
@@ -102,23 +111,11 @@ section {
 }
 
 
-.footer h3 {
-  display: flex;
-  font-size: 1rem;
-  margin: 1.2rem 0 0.2rem;
-  padding: 5;
-  border-radius: 5rem;
-  color: linear-gradient(180deg, #eeeb30, #e22c3f);
-}
-
-
 .footer h4{
   display: flex;
-  font-size: 1rem;
-  margin: 1.2rem 0 0.2rem;
-  padding: 5;
-  border-radius: 5rem;
-  color: linear-gradient(180deg, #eeeb30, #e22c3f);
+  justify-content:center;
+    font-family:sans-serif;
+font-weight: 400;
 }
 
 
@@ -257,6 +254,8 @@ section {
   justify-content: center;
   position: relative;
   padding: 0.5rem 0 1.2rem;
+    font-family:sans-serif;
+font-weight: 500;
 }
 
 .glass-radio-group {
