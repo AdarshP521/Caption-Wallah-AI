@@ -51,59 +51,25 @@ sequenceDiagram
     Frontend->>User: Copies to clipboard or triggers OS native share sheet
 ```
 
----
-
-## 🎨 3. Design System & Aesthetics
-
-### A. Color Palette
-- **Background Theme**: Obsidian Dark (`#09090b`) & Dark Slate Window (`linear-gradient(180deg, #2a2a2d, #1d1f22)`).
-- **Primary Action Gradient**: Warm Amber/Gold (`linear-gradient(135deg, #f6b73c, #ed8d3c)`).
-- **Upload Container Gradient**: Vibrant Pink/Magenta (`linear-gradient(135deg, #f162ba, #ed45ae)`).
-- **Glass Action Buttons**: Cyan/Sky Ice (`linear-gradient(135deg, #d0e7ff55, #a0d8ff)`).
-
-### B. Glassmorphism Architecture
-The UI relies on modern glassmorphism principles:
-1. **Backdrop Blur**: `backdrop-filter: blur(12px)` for frosted glass effect.
-2. **Semi‑Translucent Fills**: `rgba(255, 255, 255, 0.06)` for cards and input groups.
-3. **Inset Light Borders**: `inset 1px 1px 4px rgba(255, 255, 255, 0.2)` creating physical glass edge depth.
-
-### C. Glass Glider Mechanism
-The Vibe Selector (`Simple`, `Bold`, `Professional`) uses pure CSS radio hacks and sibling selectors (`~`):
-- Sliding physics driven by: `transition: transform 0.5s cubic-bezier(0.37, 1.95, 0.66, 0.56)`.\n- Radio `:checked` states shift the glider:\n  - `translateX(0%)` for Simple.\n  - `translateX(100%)` for Bold.\n  - `translateX(200%)` for Professional.
-
----
-
-## ⚡ 4. AI Engine & Prompt Engineering Details
+## 3. AI Engine & Prompt Engineering Details
 
 ### Model Specification
 - **Endpoint**: `https://openrouter.ai/api/v1/chat/completions`
-- **Model ID**: `nvidia/nemotron-3-ultra-550b-a55b:free`
-- **Reasoning Payload**: `extra_body: { reasoning: { enabled: true } }`
 
-### Vision Prompt Payload Format
-```json
-{
-  "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
-  "extra_body": { "reasoning": { "enabled": true } },
-  "messages": [
-    {
-      "role": "user",
-      "content": [
-        { "type": "text", "text": "Generate exactly 3 unique social media captions for this image. Vibe: <vibe>. Make them natural, engaging, and highly relevant to the image. Return valid JSON in this format: {\\"captions\\":[\\"caption 1\\",\\"caption 2\\",\\"caption 3\\"]}. Keep each caption short, polished, and distinct." },
-        { "type": "image_url", "image_url": { "url": "data:image/jpeg;base64,..." } }
-      ]
-    }
-  ]
-}
-```
 
----
+## 4. Model Used;
+- **Model ID**
+    'nvidia/nemotron-3-ultra-550b-a55b:free',
+    'google/gemma-4-26b-a4b-it:free',
+    'minimax/minimax-m3:free',
+    'google/gemini-2.0-flash-001',
+    'openai/gpt-4o-mini',
+    'meta-llama/llama-3.2-11b-vision-instruct:free'
 
-## 🧠 5. Key JavaScript Helpers
+    Future models will be added as they become available on OpenRouter.
 
-1. **`readFileAsDataUrl(file)`**: Wraps HTML5 `FileReader` in a Promise to safely convert raw browser File blobs to Base64 strings.
-2. **`parseJsonCaptions(rawText)`**: Robust multi‑tier parser that strips Markdown codeblocks (```json```), attempts strict JSON parsing, and falls back to line‑by‑line regex parsing if the AI output contains surrounding text.
-3. **`copyCaption()` & `shareCaption()`**: Implements modern Web APIs (`navigator.clipboard` & `navigator.share`) with automatic fallback fall‑throughs for unsupported devices.
+
+## Thank You for Using Subtitle-Wallah-AI! 🎉
 
 
 

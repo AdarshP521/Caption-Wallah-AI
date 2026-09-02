@@ -1,4 +1,3 @@
-// Paste your OpenRouter API Key below if you want to hardcode it for your site
 const OPENROUTER_API_KEY = "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";
 
 const vibeLabels = {
