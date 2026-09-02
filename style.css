@@ -48,6 +48,18 @@ img {
   font-style: normal;
 }
 
+.mainheader h5 {
+  font-size: clamp(1rem, 1vw, 2rem);
+  text-align: center;
+  font-family:sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  position: absolute;
+  left: 1.5rem;
+  padding: 0;
+  white-space: nowrap;
+}
+
 .mainheader .logo {
   position: absolute;
   right: 1.5rem;
@@ -114,8 +126,11 @@ section {
 .footer h4{
   display: flex;
   justify-content:center;
-    font-family:sans-serif;
-font-weight: 400;
+  align-items: center;
+  font-family:sans-serif;
+  font-size: clamp(0.65rem, 1.2vw, 1rem);
+  font-weight: 400;
+  white-space: nowrap;
 }
 
 
@@ -606,8 +621,16 @@ font-weight: 500;
   }
 
   .mainheader h1 {
+    position: relative;
     margin-left: 0;
-    font-size: 1.2rem;
+     bottom: 0.5rem;
+    font-size: clamp(0.9rem, 5vw, 1.2rem);
+  }
+
+  .mainheader h5 {
+    left:7rem;
+    bottom: 1rem;
+    font-size: clamp(0.5rem, 2.5vw, 0.65rem);
   }
 
   .mainheader .logo img {
@@ -677,6 +700,10 @@ font-weight: 500;
 
   .page-indicator {
     bottom: 12px;
+  }
+
+  .footer h4 {
+    font-size: clamp(0.5rem, 2.2vw, 0.75rem);
   }
 }
 
